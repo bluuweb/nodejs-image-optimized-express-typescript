@@ -1,13 +1,54 @@
-import express, { json, urlencoded } from "express";
+import express, {
+  json,
+  NextFunction,
+  Request,
+  Response,
+  urlencoded,
+} from "express";
+import { rateLimit } from "express-rate-limit";
+import helmet from "helmet";
 import multer from "multer";
 import { optimizeImage } from "./lib/optimize";
 
 const app = express();
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+// Aplicar un rate limit (límite de solicitudes) por IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+  standardHeaders: "draft-8", // draft-6: `RateLimit-*` headers; draft-7 & draft-8: combined `RateLimit` header
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+  ipv6Subnet: 56, // Set to 60 or 64 to be less aggressive, or 52 or 48 to be more aggressive
+  // store: ... , // Redis, Memcached, etc. See below.
+});
 
-app.use(express.static("public"));
+// Apply the rate limiting middleware to all requests.
+app.use(limiter);
+
+// activa protecciones por defecto
+app.use(helmet()); // En Express (Node.js), helmet es un middleware de seguridad que ayuda a proteger tu aplicación configurando automáticamente ciertos encabezados HTTP
+
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (_, file, cb) => {
+    if (!/^image\/(jpe?g|png|webp)$/i.test(file.mimetype)) {
+      return cb(new Error("Tipo de archivo no permitido"));
+    }
+    cb(null, true);
+  },
+});
+
+app.use(
+  express.static("public", {
+    etag: true, // Usar caching inteligente (etag + maxAge)
+    maxAge: "1h",
+    setHeaders: (res) => {
+      res.setHeader("X-Content-Type-Options", "nosniff"); // Añadir una capa de seguridad extra con X-Content-Type-Options: nosniff
+    },
+  })
+);
 app.use(json());
 app.use(urlencoded({ extended: true }));
 
@@ -16,7 +57,13 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     return res.json({ ok: false, msg: "No se puede leer el req.file" });
   }
 
-  const { buffer } = req.file;
+  const { buffer, mimetype } = req.file;
+
+  if (!/^image\/(jpe?g|png|webp)$/i.test(mimetype)) {
+    return res
+      .status(400)
+      .json({ ok: false, msg: "Tipo no permitido desde POST" });
+  }
 
   if (!buffer) {
     return res.json({ ok: false, msg: "No se puede leer el buffer" });
@@ -32,10 +79,31 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     res.send(optimizedBuffer);
   } catch (error) {
     console.log(error);
-    res.json({ ok: false, error });
+    res.json({ ok: false, error: "error al cargar la imagen" });
   }
 });
 
-app.listen(3000, () => {
-  console.log("server andando todo cachilupi");
+// Manejo de errores de multer
+interface MulterError extends Error {
+  code: string;
+}
+
+app.use(
+  (err: MulterError | Error, _: Request, res: Response, next: NextFunction) => {
+    if (err) {
+      console.log(err);
+      res.status(400).json({
+        ok: false,
+        msg: `Ocurrió un error: ${err.message}`,
+      });
+    }
+
+    next();
+  }
+);
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("server andando todo cachilupi: http://localhost:" + PORT);
 });

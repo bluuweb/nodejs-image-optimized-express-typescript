@@ -1,7 +1,9 @@
 import sharp from "sharp";
 
-export const optimizeImage = async (imageURL: Buffer<ArrayBufferLike>) => {
-  return await sharp(imageURL)
+export const optimizeImage = async (buffer: Buffer<ArrayBufferLike>) => {
+  // await sharp(buffer).metadata()
+
+  return await sharp(buffer)
     .jpeg({
       quality: 70,
       mozjpeg: true,
