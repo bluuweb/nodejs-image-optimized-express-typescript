@@ -54,23 +54,34 @@ app.use(urlencoded({ extended: true }));
 
 app.post("/upload", upload.single("image"), async (req, res) => {
   if (!req.file) {
-    return res.json({ ok: false, msg: "No se puede leer el req.file" });
+    return res.status(400).json({ error: "No se puede leer el archivo" });
   }
 
   const { buffer, mimetype } = req.file;
+  const quality = parseInt(req.body.quality) || 80;
 
   if (!/^image\/(jpe?g|png|webp)$/i.test(mimetype)) {
     return res
       .status(400)
-      .json({ ok: false, msg: "Tipo no permitido desde POST" });
+      .json({
+        error:
+          "Tipo de archivo no permitido. Solo se permiten JPG, PNG y WebP.",
+      });
   }
 
   if (!buffer) {
-    return res.json({ ok: false, msg: "No se puede leer el buffer" });
+    return res.status(400).json({ error: "No se puede procesar el archivo" });
+  }
+
+  // Validar calidad
+  if (quality < 10 || quality > 100) {
+    return res
+      .status(400)
+      .json({ error: "La calidad debe estar entre 10 y 100" });
   }
 
   try {
-    const optimizedBuffer = await optimizeImage(buffer);
+    const optimizedBuffer = await optimizeImage(buffer, quality);
     res.set("Content-Type", "image/jpeg");
     res.set(
       "Content-Disposition",
@@ -78,8 +89,10 @@ app.post("/upload", upload.single("image"), async (req, res) => {
     );
     res.send(optimizedBuffer);
   } catch (error) {
-    console.log(error);
-    res.json({ ok: false, error: "error al cargar la imagen" });
+    console.error("Error al optimizar imagen:", error);
+    res
+      .status(500)
+      .json({ error: "Error interno del servidor al procesar la imagen" });
   }
 });
 

@@ -15,39 +15,229 @@
     />
     <link
       rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
       href="style.css"
     />
   </head>
   <body class="container my-5">
     <main class="row justify-content-center">
-      <div class="col-12 col-sm-8 col-md-6">
-        <h1 class="text-center mb-5">Reduce el peso de tu imagen</h1>
-        <form
-          action="/upload"
-          method="post"
-          enctype="multipart/form-data"
-        >
-          <div class="mb-3">
-            <label
-              for="formFile"
-              class="form-label"
-              >Sube tu imagen aquí</label
+      <div class="col-12 col-lg-10 col-xl-8">
+        <h1 class="text-center mb-5 display-4 fw-bold text-primary">
+          <i class="fas fa-compress-alt me-3"></i>
+          Optimiza tus Imágenes
+        </h1>
+        <p class="text-center text-muted mb-5 lead">
+          Reduce el tamaño de tus imágenes sin perder calidad
+        </p>
+
+        <!-- Área de drag and drop -->
+        <div class="upload-container">
+          <div
+            id="dropZone"
+            class="drop-zone border-2 border-dashed rounded-3 p-5 text-center position-relative overflow-hidden"
+          >
+            <div class="drop-zone-content">
+              <i
+                class="fas fa-cloud-upload-alt display-1 text-primary mb-3"
+              ></i>
+              <h3 class="h4 mb-3">Arrastra tu imagen aquí</h3>
+              <p class="text-muted mb-4">o haz clic para seleccionar</p>
+              <button
+                type="button"
+                class="btn btn-primary btn-lg"
+                id="selectFileBtn"
+              >
+                <i class="fas fa-folder-open me-2"></i>
+                Seleccionar archivo
+              </button>
+              <p class="small text-muted mt-3">
+                Formatos soportados: JPG, PNG, WebP (máx. 10MB)
+              </p>
+            </div>
+
+            <!-- Overlay de drag activo -->
+            <div
+              class="drag-overlay position-absolute top-0 start-0 w-100 h-100 d-none"
             >
-            <input
-              class="form-control"
-              type="file"
-              id="formFile"
-              name="image"
-            />
+              <div
+                class="d-flex align-items-center justify-content-center h-100"
+              >
+                <div class="text-center">
+                  <i class="fas fa-download display-1 text-white"></i>
+                  <h3 class="text-white mt-3">Suelta aquí tu imagen</h3>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <button
-            type="submit"
-            class="btn btn-primary"
-          >
-            Cargar
-          </button>
-        </form>
+          <!-- Input file oculto -->
+          <input
+            type="file"
+            id="fileInput"
+            name="image"
+            accept="image/*"
+            class="d-none"
+          />
+        </div>
+
+        <!-- Área de previsualización -->
+        <div
+          id="previewArea"
+          class="preview-area mt-4 d-none"
+        >
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-eye me-2"></i>
+                Vista previa
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row align-items-center">
+                <div class="col-md-6">
+                  <div class="image-preview-container">
+                    <img
+                      id="imagePreview"
+                      class="img-fluid rounded"
+                      alt="Vista previa"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="file-info">
+                    <h6 class="fw-bold mb-3">Información del archivo:</h6>
+                    <ul class="list-unstyled">
+                      <li>
+                        <strong>Nombre:</strong> <span id="fileName"></span>
+                      </li>
+                      <li>
+                        <strong>Tamaño:</strong> <span id="fileSize"></span>
+                      </li>
+                      <li>
+                        <strong>Tipo:</strong> <span id="fileType"></span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="compression-controls mt-4">
+                    <label
+                      for="qualityRange"
+                      class="form-label"
+                    >
+                      <strong
+                        >Calidad de compresión:
+                        <span id="qualityValue">80</span>%</strong
+                      >
+                    </label>
+                    <input
+                      type="range"
+                      class="form-range"
+                      id="qualityRange"
+                      min="10"
+                      max="100"
+                      value="80"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-center mt-4">
+                <button
+                  id="optimizeBtn"
+                  class="btn btn-success btn-lg me-3"
+                >
+                  <i class="fas fa-magic me-2"></i>
+                  Optimizar imagen
+                </button>
+                <button
+                  id="cancelBtn"
+                  class="btn btn-outline-secondary btn-lg"
+                >
+                  <i class="fas fa-times me-2"></i>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de progreso -->
+        <div
+          id="progressArea"
+          class="mt-4 d-none"
+        >
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <i class="fas fa-cog fa-spin text-primary me-3"></i>
+                <h5 class="mb-0">Optimizando imagen...</h5>
+              </div>
+              <div
+                class="progress"
+                style="height: 8px"
+              >
+                <div
+                  id="progressBar"
+                  class="progress-bar progress-bar-striped progress-bar-animated"
+                  role="progressbar"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Área de resultado -->
+        <div
+          id="resultArea"
+          class="mt-4 d-none"
+        >
+          <div class="card border-0 shadow-sm border-success">
+            <div class="card-header bg-success text-white">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-check-circle me-2"></i>
+                ¡Optimización completada!
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="fw-bold">Imagen original:</h6>
+                  <p class="mb-0">Tamaño: <span id="originalSize"></span></p>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="fw-bold">Imagen optimizada:</h6>
+                  <p class="mb-0">Tamaño: <span id="optimizedSize"></span></p>
+                  <p class="mb-0 text-success">
+                    Reducción: <span id="reduction"></span>
+                  </p>
+                </div>
+              </div>
+              <div class="text-center mt-4">
+                <a
+                  id="downloadBtn"
+                  class="btn btn-primary btn-lg me-3"
+                  download
+                >
+                  <i class="fas fa-download me-2"></i>
+                  Descargar imagen optimizada
+                </a>
+                <button
+                  id="newImageBtn"
+                  class="btn btn-outline-primary btn-lg"
+                >
+                  <i class="fas fa-plus me-2"></i>
+                  Optimizar otra imagen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -56,5 +246,6 @@
       integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
       crossorigin="anonymous"
     ></script>
+    <script src="app.js"></script>
   </body>
 </html>

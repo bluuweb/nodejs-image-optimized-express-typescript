@@ -1,0 +1,285 @@
+/* Variables CSS para consistencia */
+:root {
+  --primary-color: #0d6efd;
+  --success-color: #198754;
+  --border-radius: 0.75rem;
+  --transition: all 0.3s ease;
+  --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Estilos generales */
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Área de drag and drop */
+.drop-zone {
+  background: white;
+  border-color: #dee2e6 !important;
+  transition: var(--transition);
+  cursor: pointer;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+
+.drop-zone:hover {
+  border-color: var(--primary-color) !important;
+  background: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.drop-zone.drag-over {
+  border-color: var(--primary-color) !important;
+  background: rgba(13, 110, 253, 0.1);
+  transform: scale(1.02);
+}
+
+.drop-zone-content {
+  z-index: 1;
+}
+
+.drag-overlay {
+  background: var(--gradient-bg);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.drop-zone.drag-over .drag-overlay {
+  opacity: 0.95;
+}
+
+.drop-zone.drag-over .drop-zone-content {
+  opacity: 0.3;
+}
+
+/* Botones con efectos */
+.btn {
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.btn-primary {
+  background: var(--gradient-bg);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+}
+
+/* Cards y contenedores */
+.card {
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Previsualización de imagen */
+.image-preview-container {
+  max-height: 300px;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.image-preview-container img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.image-preview-container:hover img {
+  transform: scale(1.05);
+}
+
+/* Range slider personalizado */
+.form-range {
+  height: 6px;
+}
+
+.form-range::-webkit-slider-thumb {
+  background: var(--primary-color);
+  border: none;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.form-range::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #0b5ed7;
+}
+
+.form-range::-moz-range-thumb {
+  background: var(--primary-color);
+  border: none;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+/* Barra de progreso */
+.progress {
+  border-radius: 10px;
+  background-color: #f8f9fa;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background: var(--gradient-bg);
+  transition: width 0.3s ease;
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.preview-area,
+.progress-area,
+.result-area {
+  animation: fadeInUp 0.5s ease;
+}
+
+/* Efectos de hover para iconos */
+.fa-cloud-upload-alt,
+.fa-compress-alt {
+  transition: var(--transition);
+}
+
+.drop-zone:hover .fa-cloud-upload-alt {
+  animation: pulse 2s infinite;
+  color: var(--primary-color) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .drop-zone {
+    min-height: 250px;
+    padding: 2rem !important;
+  }
+
+  .display-1 {
+    font-size: 3rem !important;
+  }
+
+  .btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Estados de loading */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Efectos para el área de resultado */
+.border-success {
+  border-color: var(--success-color) !important;
+  border-width: 2px !important;
+}
+
+.bg-success {
+  background: linear-gradient(135deg, #198754 0%, #20c997 100%) !important;
+}
+
+/* Tooltips y ayudas visuales */
+.file-info {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--primary-color);
+}
+
+/* Mejoras en la accesibilidad */
+.btn:focus,
+.form-range:focus,
+input[type="file"]:focus + .drop-zone {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Efectos de carga */
+.fa-spin {
+  animation: fa-spin 1s infinite linear;
+}
+
+@keyframes fa-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
